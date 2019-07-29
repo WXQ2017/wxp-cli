@@ -1,37 +1,202 @@
 #!/usr/bin/env node
-const program=require('commander')
-const path=require('path')
-const exists=require('fs').existsSync
-const chalk=require('chalk')
-const inquirer=require('inquirer')
-const Metalsmith=require('metalsmith')
-const ora=require('ora')
-const Handlebars=require('handlebars')
-const rm=require('rimraf').sync
-const checkVersion=require('../lib/check-version.js')
-const renderTemplateFiles=require('../lib/render-template-files')
-const transformIntoAbsolutePath=require('../lib/local-path').transformIntoAbsolutePath
+const program = require("commander");
+const path = require("path");
+const exists = require("fs").existsSync;
+const chalk = require("chalk");
+const inquirer = require("inquirer");
+const Metalsmith = require("metalsmith");
+const ora = require("ora");
+const Handlebars = require("handlebars");
+const rm = require("rimraf").sync;
+const checkVersion = require("../lib/check-version.js");
+const renderTemplateFiles = require("../lib/render-template-files");
+const transformIntoAbsolutePath = require("../lib/local-path")
+  .transformIntoAbsolutePath;
 
 /**
  * Usage.
  */
 
 program
-  .usage('<template-name> [project-name]')
-  .option('-c, --clone', 'use git clone')
-  .option('--offline', 'use cached template')
+  .usage("<template-name> [project-name]")
+  .option("-c, --clone", "use git clone")
+  .option("--offline", "use cached template");
 
 /**
  * Help.
  */
 
-program.on('--help', () => {
-  console.log('  Examples:')
-  console.log()
-  console.log(chalk.gray('    # create a new project with an official template'))
-  console.log('    $ wxq new page')
-  console.log()
-  console.log(chalk.gray('    # create a new component'))
-  console.log('    $ wxq new component')
-  console.log()
-})
+program.on("--help", () => {
+  console.log("  Examples:");
+  console.log();
+  console.log(
+    chalk.gray("    # create a new project with an official template")
+  );
+  console.log("    $ wxq new page");
+  console.log();
+  console.log(chalk.gray("    # create a new component"));
+  console.log("    $ wxq new component");
+  console.log();
+});
+
+program.parse(process.argv);
+if (program.args.length < 1) return program.help();
+
+const newType = program.args[0];
+
+if (newType !== "component" && newType !== "page") {
+  console.log();
+  console.log(
+    chalk.red(
+      `Do not support this type <${newType}>,please choose one between component and page`
+    )
+  );
+  console.log();
+  process.exit();
+}
+
+checkVersion(() => {
+  run();
+});
+
+function run() {
+  // process.cwd() 是当前执行node命令时候的文件夹地址 ——工作目录
+  // __dirname 是被执行的js 文件的地址 ——文件所在目录
+  let configPath = path.join(process.cwd(), "template.js");
+  if (program.config) {
+    configPath = path.isAbsolute(program.config)
+      ? program.config
+      : path.join(process.cwd(), program.config);
+  }
+  const asunaConfig = require(configPath);
+  const templates = asunaConfig[`${newType}`].templates;
+  const defaultDest = asunaConfig[`${newType}`].output;
+  const helpers = asunaConfig.helpers;
+  //注册helpers
+  helpers &&
+    Object.keys(helpers).map(key => {
+      Handlebars.registerHelper(key, helpers[key]);
+    });
+  //选择模板文件
+  chooseedTemplate(templates, function(choosedTemplate) {
+    inquirer
+      .prompt(
+        [
+          {
+            type: "input",
+            name: "name",
+            message: `Input the name of new ${newType}`,
+            default: choosedTemplate.name
+          }
+        ].concat(choosedTemplate.prompts)
+      )
+      .then(answers => {
+        //最终构建路径
+        const finalDestination = path.join(
+          program.dest ? transformIntoAbsolutePath(program.dest) : defaultDest,
+          answers.name
+        );
+        //判断生成目录下是否存在同名
+        if (exists(finalDestination)) {
+          confirmOverride(newType, answers.name, function(override) {
+            if (override) {
+              rm(finalDestination);
+              newPageOrComponent(
+                choosedTemplate.src,
+                finalDestination,
+                answers
+              );
+            } else {
+              process.exit();
+            }
+          });
+        } else {
+          newPageOrComponent(choosedTemplate.src, finalDestination, answers);
+        }
+      });
+  });
+}
+/**
+ *
+ * @param templates
+ * @param callback
+ */
+function chooseedTemplate(templates, callback) {
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "name",
+        choices: templates.map(template => template.name),
+        message: `Choose one ${newType} you need`
+      }
+    ])
+    .then(answers => {
+      const { name } = answers;
+      const choosedTemplate = templates.find(
+        template => template.name === name
+      );
+      if (typeof callback === "function") {
+        callback(choosedTemplate);
+      }
+    });
+}
+/**
+ *
+ * @param newType
+ * @param name
+ * @param callback
+ */
+function confirmOverride(newType, name, callback) {
+  inquirer
+    .prompt([
+      {
+        type: "confirm",
+        name: "override",
+        message: `The ${newType} named ${name} exists!Override?`
+      }
+    ])
+    .then(answers => {
+      const { override } = answers;
+      if (typeof callback === "function") {
+        callback(override);
+      }
+    });
+}
+
+/**
+ *
+ * @param {String}source
+ * @param {String}destination
+ */
+function newPageOrComponent(source, destination, otherMetadata) {
+  const spinner = ora(`Newing ${newType}...`).start();
+  try {
+    const metalsmith = Metalsmith(source);
+    //加入新的全局变量
+    Object.assign(metalsmith.metadata(), otherMetadata);
+    //使用中间件
+    metalsmith.use(renderTemplateFiles());
+    //最后生成
+    metalsmith
+      .source(".")
+      .destination(destination)
+      .clean(false)
+      .build(function(err) {
+        spinner.stop();
+        if (err) throw err;
+        console.log();
+        console.log(chalk.green("New Successfully"));
+        console.log();
+        console.log(
+          `${chalk.green("Please cd")} ${destination} ${chalk.green(
+            `to check your ${newType}`
+          )}`
+        );
+        console.log();
+      });
+  } catch (err) {
+    spinner.stop();
+    console.log(err);
+  }
+}

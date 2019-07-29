@@ -1,6 +1,6 @@
 {
   "name": "wxq-cli",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "前端构建工具",
   "main": "index.js",
   "directories": {
@@ -14,6 +14,7 @@
     "async": "^2.6.1",
     "chalk": "^2.4.1",
     "commander": "^2.16.0",
+    "consolidate": "^0.15.1",
     "download-git-repo": "^1.0.2",
     "handlebars": "^4.0.11",
     "inquirer": "^6.0.0",
