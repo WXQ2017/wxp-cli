@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+const program=require('commander')
+const path=require('path')
+const exists=require('fs').existsSync
+const chalk=require('chalk')
+const inquirer=require('inquirer')
+const Metalsmith=require('metalsmith')
+const ora=require('ora')
+const Handlebars=require('handlebars')
+const rm=require('rimraf').sync
+const checkVersion=require('../lib/check-version.js')
+const renderTemplateFiles=require('../lib/render-template-files')
+const transformIntoAbsolutePath=require('../lib/local-path').transformIntoAbsolutePath
+
+/**
+ * Usage.
+ */
+
+program
+  .usage('<template-name> [project-name]')
+  .option('-c, --clone', 'use git clone')
+  .option('--offline', 'use cached template')
+
+/**
+ * Help.
+ */
+
+program.on('--help', () => {
+  console.log('  Examples:')
+  console.log()
+  console.log(chalk.gray('    # create a new project with an official template'))
+  console.log('    $ wxp new page')
+  console.log()
+  console.log(chalk.gray('    # create a new component'))
+  console.log('    $ wxp new component')
+  console.log()
+})
