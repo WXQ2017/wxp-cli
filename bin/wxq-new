@@ -13,14 +13,16 @@ const renderTemplateFiles = require("../lib/render-template-files");
 const transformIntoAbsolutePath = require("../lib/local-path")
   .transformIntoAbsolutePath;
 
+const asunaConfig = require("../config/template");
+
 /**
  * Usage.
  */
 
 program
   .usage("<template-name> [project-name]")
-  .option("-c, --clone", "use git clone")
-  .option("--offline", "use cached template");
+  .option("-c, --component", "new a component")
+  .option("-p --page", "new a page");
 
 /**
  * Help.
@@ -62,13 +64,16 @@ checkVersion(() => {
 function run() {
   // process.cwd() 是当前执行node命令时候的文件夹地址 ——工作目录
   // __dirname 是被执行的js 文件的地址 ——文件所在目录
-  let configPath = path.join(process.cwd(), "template.js");
+  // let configPath = path.join(process.cwd(), "template.js");
+  console.log(chalk.green("program.config:", program.config));
   if (program.config) {
-    configPath = path.isAbsolute(program.config)
-      ? program.config
-      : path.join(process.cwd(), program.config);
+    // 是否是绝对路径
+    // configPath = path.isAbsolute(program.config)
+    //   ? program.config
+    //   : path.join(process.cwd(), program.config);
   }
-  const asunaConfig = require(configPath);
+  // const asunaConfig = require(configPath);
+  // console.log(chalk.green(configPath, asunaConfig));
   const templates = asunaConfig[`${newType}`].templates;
   const defaultDest = asunaConfig[`${newType}`].output;
   const helpers = asunaConfig.helpers;
@@ -79,6 +84,7 @@ function run() {
     });
   //选择模板文件
   chooseedTemplate(templates, function(choosedTemplate) {
+    console.log(`choosedTemplate:${JSON.stringify(choosedTemplate)}`);
     inquirer
       .prompt(
         [
@@ -91,12 +97,15 @@ function run() {
         ].concat(choosedTemplate.prompts)
       )
       .then(answers => {
-        //最终构建路径
+        // 最终构建路径
+        const temName = answers.name && answers.name.split("-")[0];
         const finalDestination = path.join(
           program.dest ? transformIntoAbsolutePath(program.dest) : defaultDest,
-          answers.name
+          toLine(temName)
         );
-        //判断生成目录下是否存在同名
+        console.log("最终构建路径 finalDestination", finalDestination);
+
+        // 判断生成目录下是否存在同名
         if (exists(finalDestination)) {
           confirmOverride(newType, answers.name, function(override) {
             if (override) {
@@ -111,13 +120,14 @@ function run() {
             }
           });
         } else {
+          // console.log(choosedTemplate.src, finalDestination, answers);
           newPageOrComponent(choosedTemplate.src, finalDestination, answers);
         }
       });
   });
 }
 /**
- *
+ * 选择模板
  * @param templates
  * @param callback
  */
@@ -169,18 +179,18 @@ function confirmOverride(newType, name, callback) {
  * @param {String}source
  * @param {String}destination
  */
-function newPageOrComponent(source, destination, otherMetadata) {
+function newPageOrComponent(source, destination = ".", otherMetadata = {}) {
   const spinner = ora(`Newing ${newType}...`).start();
   try {
     const metalsmith = Metalsmith(source);
-    //加入新的全局变量
+    // 加入新的全局变量 otherMetadata: {name: xx } name为class名
     Object.assign(metalsmith.metadata(), otherMetadata);
     //使用中间件
     metalsmith.use(renderTemplateFiles());
     //最后生成
     metalsmith
-      .source(".")
-      .destination(destination)
+      .source(".") // 模板文件 path
+      .destination(destination) // 最终编译好的文件存放位置
       .clean(false)
       .build(function(err) {
         spinner.stop();
@@ -199,4 +209,14 @@ function newPageOrComponent(source, destination, otherMetadata) {
     spinner.stop();
     console.log(err);
   }
+}
+
+/**
+ * 驼峰命名转中横线
+ *
+ * @param {*} name
+ * @returns
+ */
+function toLine(name) {
+  return name.replace(/([A-Z])/g, "-$1").toLowerCase();
 }
