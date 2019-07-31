@@ -3,6 +3,6 @@
 require('commander')
   .version(require('../package').version)
   .usage('<command> [options]')
-  .command('init', 'generate project')
-  .command('build', 'new page')
+  .command('init', 'create a project of vue or react')
+  .command('build', 'operate')
   .parse(process.argv);

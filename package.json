@@ -1,6 +1,6 @@
 {
   "name": "wxq-cli",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "前端构建工具",
   "main": "index.js",
   "directories": {
@@ -8,8 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "init": "node bin/wxq init"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "async": "^2.6.1",
@@ -38,7 +37,7 @@
   "author": "wxq",
   "license": "ISC",
   "bin": {
-    "wxq": "bin/wxq"
+    "wxq": "./bin/wxq"
   },
   "bugs": {
     "url": "https://github.com/WXQ2017/wxq-cli/issues"

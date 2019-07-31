@@ -14,7 +14,8 @@ const transformIntoAbsolutePath = require("../lib/local-path")
   .transformIntoAbsolutePath;
 
 const asunaConfig = require("../config/template");
-
+// 指令类型
+let newType;
 /**
  * Usage.
  */
@@ -29,31 +30,29 @@ program
  */
 
 program.on("--help", () => {
-  console.log("  Examples:");
+  console.log(chalk.magenta("  Examples:"));
   console.log();
   console.log(
-    chalk.gray("    # create a new project with an official template")
+    chalk.yellow("    # create a new project with an official template")
   );
   console.log("    $ wxq build page");
   console.log();
-  console.log(chalk.gray("    # create a new component"));
+  console.log(chalk.yellow("    # create a new component"));
   console.log("    $ wxq build component");
   console.log();
 });
 
 program.parse(process.argv);
-if (program.args.length < 1) return program.help();
-
-const newType = program.args[0];
-
-if (newType !== "component" && newType !== "page") {
+// console.log('a',  program)
+// if (program.args.length < 1) return program.help();
+if (program.component || program.page || program.args.length) {
+  // newType = program.args[0];
+  newType = program.component ? 'component' : program.page ? 'page' : program.args[0];
+} else {
   console.log();
-  console.log(
-    chalk.red(
-      `Do not support this type <${newType}>,please choose one between component and page`
-    )
-  );
+  console.log(chalk.red(`Do not support this type <${newType}>`));
   console.log();
+  program.help();
   process.exit();
 }
 
@@ -75,7 +74,7 @@ function run() {
     });
   //选择模板文件
   chooseedTemplate(templates, function(choosedTemplate) {
-    console.log(`choosedTemplate:${JSON.stringify(choosedTemplate)}`);
+    // console.log(`choosedTemplate:${JSON.stringify(choosedTemplate)}`);
     inquirer
       .prompt(
         [
@@ -113,11 +112,7 @@ function run() {
             }
           });
         } else {
-          newPageOrComponent(
-            choosedTemplate.src,
-            finalDestination,
-            answers
-          );
+          newPageOrComponent(choosedTemplate.src, finalDestination, answers);
         }
       });
   });
@@ -240,8 +235,8 @@ function toUpCase(name) {
  */
 function HtmlTemplateReplace(name) {
   const config = new Object();
-  if(name.indexOf('-') > -1) {
-    config.name = name.split('-')[0]
+  if (name.indexOf("-") > -1) {
+    config.name = name.split("-")[0];
   } else {
     config.name = name;
   }
