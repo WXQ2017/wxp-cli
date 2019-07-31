@@ -1,4 +1,4 @@
 <template>
-  <div>{{title}}</div>
+  <div>{{lineName}}</div>
 </template>
-<script src="./demo.ts" lang="ts"></script>
+<script src="./{{lineName}}.ts" lang="ts"></script>

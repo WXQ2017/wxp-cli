@@ -34,10 +34,10 @@ program.on("--help", () => {
   console.log(
     chalk.gray("    # create a new project with an official template")
   );
-  console.log("    $ wxq new page");
+  console.log("    $ wxq build page");
   console.log();
   console.log(chalk.gray("    # create a new component"));
-  console.log("    $ wxq new component");
+  console.log("    $ wxq build component");
   console.log();
 });
 
@@ -64,16 +64,7 @@ checkVersion(() => {
 function run() {
   // process.cwd() 是当前执行node命令时候的文件夹地址 ——工作目录
   // __dirname 是被执行的js 文件的地址 ——文件所在目录
-  // let configPath = path.join(process.cwd(), "template.js");
-  console.log(chalk.green("program.config:", program.config));
-  if (program.config) {
-    // 是否是绝对路径
-    // configPath = path.isAbsolute(program.config)
-    //   ? program.config
-    //   : path.join(process.cwd(), program.config);
-  }
-  // const asunaConfig = require(configPath);
-  // console.log(chalk.green(configPath, asunaConfig));
+  // console.log(chalk.green("program.config:", program.config));
   const templates = asunaConfig[`${newType}`].templates;
   const defaultDest = asunaConfig[`${newType}`].output;
   const helpers = asunaConfig.helpers;
@@ -97,17 +88,19 @@ function run() {
         ].concat(choosedTemplate.prompts)
       )
       .then(answers => {
+        // 扩展模板数据类型
+        answers = HtmlTemplateReplace(answers.name);
         // 最终构建路径
-        const temName = answers.name && answers.name.split("-")[0];
+        let temName = answers.name;
         const finalDestination = path.join(
           program.dest ? transformIntoAbsolutePath(program.dest) : defaultDest,
           toLine(temName)
         );
-        console.log("最终构建路径 finalDestination", finalDestination);
+        // console.log("最终构建路径 finalDestination", finalDestination);
 
         // 判断生成目录下是否存在同名
         if (exists(finalDestination)) {
-          confirmOverride(newType, answers.name, function(override) {
+          confirmOverride(newType, temName, function(override) {
             if (override) {
               rm(finalDestination);
               newPageOrComponent(
@@ -120,8 +113,11 @@ function run() {
             }
           });
         } else {
-          // console.log(choosedTemplate.src, finalDestination, answers);
-          newPageOrComponent(choosedTemplate.src, finalDestination, answers);
+          newPageOrComponent(
+            choosedTemplate.src,
+            finalDestination,
+            answers
+          );
         }
       });
   });
@@ -146,6 +142,9 @@ function chooseedTemplate(templates, callback) {
       const choosedTemplate = templates.find(
         template => template.name === name
       );
+      /**
+       * 模板结构定义
+       */
       if (typeof callback === "function") {
         callback(choosedTemplate);
       }
@@ -177,13 +176,14 @@ function confirmOverride(newType, name, callback) {
 /**
  *
  * @param {String}source
- * @param {String}destination
+ * @param {String}destination 路径
  */
 function newPageOrComponent(source, destination = ".", otherMetadata = {}) {
   const spinner = ora(`Newing ${newType}...`).start();
   try {
     const metalsmith = Metalsmith(source);
-    // 加入新的全局变量 otherMetadata: {name: xx } name为class名
+    // 加入模板替换变量
+    // console.log("otherMetadata:", otherMetadata)
     Object.assign(metalsmith.metadata(), otherMetadata);
     //使用中间件
     metalsmith.use(renderTemplateFiles());
@@ -196,10 +196,10 @@ function newPageOrComponent(source, destination = ".", otherMetadata = {}) {
         spinner.stop();
         if (err) throw err;
         console.log();
-        console.log(chalk.green("New Successfully"));
+        console.log(chalk.green("New Successfully!"));
         console.log();
         console.log(
-          `${chalk.green("Please cd")} ${destination} ${chalk.green(
+          `${chalk.green("Please cd")} ${chalk.cyan(destination)} ${chalk.green(
             `to check your ${newType}`
           )}`
         );
@@ -219,4 +219,33 @@ function newPageOrComponent(source, destination = ".", otherMetadata = {}) {
  */
 function toLine(name) {
   return name.replace(/([A-Z])/g, "-$1").toLowerCase();
+}
+
+/**
+ * 首字母大写
+ *
+ * @param {*} name 名称
+ * @returns
+ */
+function toUpCase(name) {
+  return name[0].toLocaleUpperCase() + name.substring(1);
+}
+/**
+ * template 模板渲染替换变量对象
+ *
+ * @param {*} name 文件名
+ * @param name 定义文件输入名 demo
+ * @param className 类名 eq: Demo
+ * @param lineName 驼峰转中横线命名 eq: homeList to home-list
+ */
+function HtmlTemplateReplace(name) {
+  const config = new Object();
+  if(name.indexOf('-') > -1) {
+    config.name = name.split('-')[0]
+  } else {
+    config.name = name;
+  }
+  config.className = toUpCase(config.name);
+  config.lineName = toLine(config.name);
+  return config;
 }

@@ -24,6 +24,7 @@
     "request": "^2.87.0",
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
+    "sgv-cli": "^1.1.4",
     "user-home": "^2.0.0"
   },
   "repository": {

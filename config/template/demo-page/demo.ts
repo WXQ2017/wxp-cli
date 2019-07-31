@@ -1,7 +1,7 @@
-import Vue from "vue"
-interface I{{name}}{
-  title: string
+import Vue from "vue";
+interface I{{className}}{
+  title: string;
 }
-export default class {{name}} extends Vue implements I{{name}}{
-  title: string = "demo"
+export default class {{className}}Page extends Vue implements I{{className}}{
+  title: string = "{{lineName}}"
 }
