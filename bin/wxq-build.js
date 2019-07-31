@@ -13,9 +13,14 @@ const renderTemplateFiles = require("../lib/render-template-files");
 const transformIntoAbsolutePath = require("../lib/local-path")
   .transformIntoAbsolutePath;
 
-const asunaConfig = require("../config/template");
+const asunaConfig = require("../config/template.js");
+const routerTplPath = require("../config/module.router.ts")
+const CONSTANT = require("../config/constant")
 // 指令类型
 let newType;
+
+// 是当前执行node命令时候的文件夹地址 ——工作目录
+const currentDir = process.env.PWD || process.cwd();
 /**
  * Usage.
  */
@@ -41,7 +46,6 @@ program.on("--help", () => {
   console.log("    $ wxq build component");
   console.log();
 });
-
 program.parse(process.argv);
 // console.log('a',  program)
 // if (program.args.length < 1) return program.help();
@@ -206,6 +210,25 @@ function newPageOrComponent(source, destination = ".", otherMetadata = {}) {
   }
 }
 
+/**
+ *  新增路由
+ *
+ */
+function addRouter() {
+  const basePath = path.join(currentDir, "src/");
+  const fileName = "module.router.ts";
+  const original = fs.readFileSync(routerTplPath).toString("utf8");
+  const configContent = CONSTANT.PAGE.ANCHOR +
+  process.arch +
+      "  " + "内容"
+      // TODO 内容
+      addContentToFile(basePath, fileName, original, CONSTANT.PAGE.ANCHOR, configContent, function (err) {
+      if (err) {
+          console.error(err.message);
+          return;
+      }
+  });
+};
 /**
  * 驼峰命名转中横线
  *

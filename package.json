@@ -1,6 +1,6 @@
 {
   "name": "wxq-cli",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "前端构建工具",
   "main": "index.js",
   "directories": {
@@ -37,7 +37,7 @@
   "author": "wxq",
   "license": "ISC",
   "bin": {
-    "wxq": "./bin/wxq"
+    "wxq": "bin/wxq"
   },
   "bugs": {
     "url": "https://github.com/WXQ2017/wxq-cli/issues"
