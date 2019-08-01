@@ -43,7 +43,7 @@ let isTrue = false;
 if (program.hasOwnProperty("page")) {
   const page = new Page(program.page, program.args[0]);
   page.copyFile();
-  // page.addFactoryFun();
+  page.addPageLazyLoad();
   // page.addRouter();
   isTrue = true;
 }

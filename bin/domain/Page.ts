@@ -2,7 +2,7 @@ import Base from "./Base";
 const path = require("path");
 const fs = require("fs");
 import chalk from "chalk";
-const mkdirp = require("mkdirp")
+const mkdirp = require("mkdirp");
 
 interface IPage {
   /**
@@ -21,9 +21,15 @@ interface IPage {
   writeFile(
     basePath: string,
     fileName: string,
-    data: Buffer,
+    data: Buffer | string,
     overwrite: boolean
   ): void;
+  /**
+   * 新增page 懒加载依赖
+   *
+   * @memberof IPage
+   */
+  addPageLazyLoad(): void;
 }
 export default class Page extends Base implements IPage {
   pageName: string;
@@ -41,13 +47,20 @@ export default class Page extends Base implements IPage {
         const ext = this.getExtName(fileName);
         const pathName = path.join(this.tempPath, fileName);
         fs.readFile(pathName, (err: any, data: any) => {
-          const compailedData = this.replaceKeyword(this.pageName, data.toString("utf8"));
+          const compailedData = this.replaceKeyword(
+            this.pageName,
+            data
+          );
           const basePath = path.join(
             this.currentDir,
             "/src/pages/",
             this.toLine(this.pageName)
           );
-          this.writeFile(basePath, this.toLine(this.pageName) + ext, compailedData);
+          this.writeFile(
+            basePath,
+            this.toLine(this.pageName) + ext,
+            compailedData
+          );
         });
       });
     });
@@ -55,7 +68,7 @@ export default class Page extends Base implements IPage {
   async writeFile(
     basePath: string,
     fileName: string,
-    data: Buffer,
+    data: Buffer | string,
     overwrite?: boolean
   ) {
     if (overwrite) {
@@ -69,7 +82,7 @@ export default class Page extends Base implements IPage {
     // TODO  文件重复优化
     // 文件夹已存在
     if (fs.existsSync(basePath) && fs.existsSync(filePath)) {
-     return;
+      return;
     }
     // 创建文件夹
     if (!fs.existsSync(basePath)) {
@@ -81,6 +94,29 @@ export default class Page extends Base implements IPage {
         console.log(err.message);
       }
       console.log(chalk.green("created successfuly"));
+    });
+  }
+
+  addPageLazyLoad() {
+    const basePath = path.join(__dirname, this.currentDir, "/src/pages/");
+    const fileName = "fac.page.ts";
+    // TODO page factory template
+    const content = "";
+    this.addContentToFile(basePath, fileName);
+  }
+  addContentToFile(basePath: string, fileName: string) {
+    const filePath = path.join(basePath, fileName);
+    if (!fs.existsSync(filePath)) {
+      this.writeFile(basePath, fileName, "");
+    }
+    //TODO
+    fs.readFile(filePath, "utf8", (err: any, data: any) => {
+      
+      fs.writeFile(filePath, () => {
+        if (err) {
+
+        }
+      });
     });
   }
 }
