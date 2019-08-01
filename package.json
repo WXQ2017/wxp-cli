@@ -19,6 +19,7 @@
     "download-git-repo": "^1.0.2",
     "handlebars": "^4.0.11",
     "inquirer": "^6.0.0",
+    "lodash.template": "^4.5.0",
     "metalsmith": "^2.3.0",
     "ora": "^3.0.0",
     "request": "^2.87.0",
@@ -40,7 +41,7 @@
   "author": "wxq",
   "license": "ISC",
   "bin": {
-    "wxq": "dist/wxq"
+    "wxq": "dist/wxq.js"
   },
   "bugs": {
     "url": "https://github.com/WXQ2017/wxq-cli/issues"
@@ -48,6 +49,7 @@
   "homepage": "https://github.com/WXQ2017/wxq-cli#readme",
   "devDependencies": {
     "@types/inquirer": "^6.5.0",
+    "@types/lodash.template": "^4.4.6",
     "@types/request": "^2.48.2"
   }
 }
