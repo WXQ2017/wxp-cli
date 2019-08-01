@@ -8,7 +8,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rimraf dist && tsc && npm unlink && npm link"
   },
   "dependencies": {
     "async": "^2.6.1",
@@ -24,6 +25,8 @@
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
     "sgv-cli": "^1.1.4",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3",
     "user-home": "^2.0.0"
   },
   "repository": {
@@ -37,10 +40,14 @@
   "author": "wxq",
   "license": "ISC",
   "bin": {
-    "wxq": "bin/wxq"
+    "wxq": "dist/wxq"
   },
   "bugs": {
     "url": "https://github.com/WXQ2017/wxq-cli/issues"
   },
-  "homepage": "https://github.com/WXQ2017/wxq-cli#readme"
+  "homepage": "https://github.com/WXQ2017/wxq-cli#readme",
+  "devDependencies": {
+    "@types/inquirer": "^6.5.0",
+    "@types/request": "^2.48.2"
+  }
 }

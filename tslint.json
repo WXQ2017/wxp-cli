@@ -1,0 +1,19 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "indent": [
+      true,
+      "spaces",
+      2
+    ],
+    "member-access": false,
+    "arrow-parens": false,
+    "await-promise": true,
+    "no-var-requires": true, // 不允许使用var module = require("module"),用 import foo = require('foo')导入
+  },
+  "rulesDirectory": []
+}
