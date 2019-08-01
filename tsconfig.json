@@ -63,6 +63,7 @@
   },
   "exclude": [
     "wxq-project",
+    "vue-project",
     "config/vue-src"
   ]
 }

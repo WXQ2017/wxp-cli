@@ -1,7 +1,7 @@
 const path = require("path");
 const checkVersion = require("../../lib/check-version.js");
 const template = require("lodash.template");
-import inquirer from "inquirer";
+const inquirer = require("inquirer");
 import chalk from "chalk";
 interface IBase {
   /**
@@ -62,7 +62,7 @@ export default class Base implements IBase {
     return name[0].toLocaleUpperCase() + name.substring(1);
   }
 
-  replaceKeyword(keyword: string, content: Buffer) {
+  replaceKeyword(keyword: string, content: string) {
     const compiled = template(content);
     const className = keyword;
     const lineClassName = this.toLine(keyword);
