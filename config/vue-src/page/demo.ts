@@ -16,7 +16,9 @@ interface I<%= upCaseClassName%>Page {
 export default class <%= upCaseClassName%>Page extends mixins(BasePage) implements I<%= upCaseClassName%>Page {
 
   title: string = "<%= lineClassName%>";
-
+  fetchData() {
+    //
+  }
   mounted() {
     //
   }
