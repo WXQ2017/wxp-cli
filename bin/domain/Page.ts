@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 import chalk from "chalk";
 const mkdirp = require("mkdirp");
+const CONSTANT = require("../../config/constant");
 
 interface IPage {
   /**
@@ -11,25 +12,50 @@ interface IPage {
   tempPath: string;
   /**
    * 写入文件
-   *
-   * @param {string} basePath 写入路径
-   * @param {string} fileName 文件名
-   * @param {Buffer} data file data
-   * @param {boolean} overwrite 已存在命名
-   * @memberof IPage
+   * @param basePath 写入路径
+   * @param fileName 文件名
+   * @param data file data
+   * @param overwrite 已存在命名
    */
   writeFile(
     basePath: string,
     fileName: string,
     data: Buffer | string,
-    overwrite: boolean
+    overwrite: boolean,
   ): void;
   /**
    * 新增page 懒加载依赖
    *
-   * @memberof IPage
    */
   addPageLazyLoad(): void;
+  /**
+   * 添加文件内容
+   *
+   * @param basePath 文件路径
+   * @param {string} fileName 文件名称
+   * @param {string} data 添加内容
+   * @param {string} origin 添加位置锚点
+   */
+  addContentToFile(
+    basePath: string,
+    fileName: string,
+    data: string,
+    origin: string,
+  ): void;
+  /**
+   * 替换文件中指定内容
+   *
+   * @param {string} basePath 文件路径
+   * @param {string} fileName 文件名称
+   * @param {string} data 添加内容
+   * @param {string} origin 添加位置锚点
+   */
+  replaceFileContent(
+    basePath: string,
+    fileName: string,
+    data: string,
+    origin: string,
+  ): void;
 }
 export default class Page extends Base implements IPage {
   pageName: string;
@@ -47,19 +73,16 @@ export default class Page extends Base implements IPage {
         const ext = this.getExtName(fileName);
         const pathName = path.join(this.tempPath, fileName);
         fs.readFile(pathName, (err: any, data: any) => {
-          const compailedData = this.replaceKeyword(
-            this.pageName,
-            data
-          );
+          const compailedData = this.replaceKeyword(this.pageName, data);
           const basePath = path.join(
             this.currentDir,
             "/src/pages/",
-            this.toLine(this.pageName)
+            this.toLine(this.pageName),
           );
           this.writeFile(
             basePath,
             this.toLine(this.pageName) + ext,
-            compailedData
+            compailedData,
           );
         });
       });
@@ -69,13 +92,13 @@ export default class Page extends Base implements IPage {
     basePath: string,
     fileName: string,
     data: Buffer | string,
-    overwrite?: boolean
+    overwrite?: boolean,
   ) {
     if (overwrite) {
       const override = await this.confirmOverride("page", fileName);
       // TODO
       return console.log(
-        chalk.bgBlue(`${override ? "Numbered Mode!!!" : "continue..."}`)
+        chalk.bgBlue(`${override ? "Numbered Mode!!!" : "continue..."}`),
       );
     }
     const filePath = path.join(basePath, fileName);
@@ -90,32 +113,60 @@ export default class Page extends Base implements IPage {
     }
     // fs.writeFile(fileName: ./xx.txt, data:string, options: default { 'flag': 'w' }: any, callback)
     fs.writeFile(filePath, data, { flag: "w" }, (err: any) => {
-      if (err) {
-        console.log(err.message);
-      }
-      console.log(chalk.green("created successfuly"));
+      this.showError(err);
+      this.showSucceed(`${fileName} created successfuly!`);
     });
   }
-
   addPageLazyLoad() {
-    const basePath = path.join(__dirname, this.currentDir, "/src/pages/");
+    const basePath = path.join(this.currentDir, "/src/pages/");
     const fileName = "fac.page.ts";
-    // TODO page factory template
-    const content = "";
-    this.addContentToFile(basePath, fileName);
+    const content =
+      CONSTANT.PAGE.ORIGIN +
+      this.endOfLine() +
+      this.replaceKeyword(this.pageName, CONSTANT.PAGE.CONTENT);
+
+    this.replaceFileContent(basePath, fileName, content, CONSTANT.PAGE.ORIGIN);
   }
-  addContentToFile(basePath: string, fileName: string) {
+  replaceFileContent(
+    basePath: string,
+    fileName: string,
+    data: string,
+    origin: string,
+  ) {
     const filePath = path.join(basePath, fileName);
     if (!fs.existsSync(filePath)) {
-      this.writeFile(basePath, fileName, "");
+      this.writeFile(basePath, fileName, origin);
     }
-    //TODO
-    fs.readFile(filePath, "utf8", (err: any, data: any) => {
-      
-      fs.writeFile(filePath, () => {
-        if (err) {
-
-        }
+    fs.readFile(filePath, (err: any, fileData: any) => {
+      let fileContent = fileData.toString("utf8");
+      const regx = new RegExp(origin);
+      if (fileContent.search(regx) === -1) {
+        this.showTip("Failed, Don't find the origin");
+      }
+      fileContent = (fileContent as string).replace(regx, data);
+      fs.writeFile(filePath, fileContent, (err: any) => {
+        this.showError(err);
+      });
+    });
+  }
+  addContentToFile(
+    basePath: string,
+    fileName: string,
+    data: string,
+    origin: string,
+  ) {
+    const filePath = path.join(basePath, fileName);
+    if (!fs.existsSync(filePath)) {
+      this.writeFile(basePath, fileName, origin);
+    }
+    // 'a' - 打开文件用于追加。如果文件不存在，则创建该文件。
+    fs.open(filePath, "a", (err: any, fd: any) => {
+      this.showError(err);
+      fs.appendFile(filePath, data, "utf8", (err: any) => {
+        fs.close(fd, (err: any) => {
+          this.showError(err);
+        });
+        this.showError(err);
       });
     });
   }

@@ -2,6 +2,8 @@ const path = require("path");
 const checkVersion = require("../../lib/check-version.js");
 const template = require("lodash.template");
 const inquirer = require("inquirer");
+// 换行
+const os = require("os");
 import chalk from "chalk";
 interface IBase {
   /**
@@ -47,6 +49,28 @@ export default class Base implements IBase {
   currentDir: string = process.cwd();
   isVueTempPathSuffix: string = "../../config/vue-src";
   isReactTempPathSuffix: string = "../../config/react-src";
+  // end-of-line marker
+  endOfLine() {
+    return os.EOL;
+  }
+  showError(err: any) {
+    if (err) {
+      console.log(chalk.red(err || err.message));
+    }
+  }
+  showTip(content: string) {
+    console.log(chalk.bgCyan("Tips:") + "  " + chalk.yellow(content));
+  }
+  showSucceed(content: string, thing?: string) {
+    if (thing) {
+      console.log(chalk.bgCyan(thing), "----", chalk.green(content));
+    } else {
+      console.log(chalk.green(content));
+    }
+  }
+  showOperate(content: string) {
+    console.log(chalk`{rgb(255,131,0) ${content}}`);
+  }
   async checkV() {
     await checkVersion();
   }

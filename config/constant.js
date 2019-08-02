@@ -1,5 +1,7 @@
 module.exports = CONSTANT = {
   PAGE: {
-    ANCHOR: "// WXQ-BUILD-ROUTER # NOT DELETE",
+    ORIGIN: "// WXQ-BUILD-PAGE # NOT DELETE",
+    CONTENT:
+      '// <%= lineClassName%> PAGE BEGIN\nexport function <%= className%>PagePreloading(): Promise<any> {\n  return import("./<%= lineClassName%>/<%= lineClassName%>.vue").catch(error => {\n    return dealOccurred(error, "<%= upCaseClassName%>");\n  });\n}\n// <%= lineClassName%> PAGE END',
   },
 };
