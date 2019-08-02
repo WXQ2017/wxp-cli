@@ -44,7 +44,7 @@ if (program.hasOwnProperty("page")) {
   const page = new Page(program.page, program.args[0]);
   page.copyFile();
   page.addPageLazyLoad();
-  // page.addRouter();
+  page.addRouter();
   isTrue = true;
 }
 

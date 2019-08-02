@@ -2,6 +2,9 @@ const path = require("path");
 const checkVersion = require("../../lib/check-version.js");
 const template = require("lodash.template");
 const inquirer = require("inquirer");
+const fs = require("fs");
+const mkdirp = require("mkdirp");
+
 // 换行
 const os = require("os");
 import chalk from "chalk";
@@ -43,6 +46,49 @@ interface IBase {
    * @param callback
    */
   confirmOverride(newType: string, name: string): void;
+  /**
+   * 写入文件
+   * @param basePath 写入路径
+   * @param fileName 文件名
+   * @param data file data
+   * @param overwrite 已存在命名
+   */
+  writeFile(
+    basePath: string,
+    fileName: string,
+    data: Buffer | string,
+    overwrite: boolean,
+  ): void;
+  /**
+   * 添加文件内容
+   * @description:
+   * @param basePath 文件路径
+   * @param {string} fileName 文件名称
+   * @param {string} data 添加内容
+   * @param {string} origin 添加位置锚点
+   */
+  addContentAppendToFile(
+    basePath: string,
+    fileName: string,
+    data: string,
+    origin: string,
+  ): void;
+  /**
+   * 替换文件中指定内容
+   *
+   * @param {string} basePath 文件路径
+   * @param {string} fileName 文件名称
+   * @param {string} origin 原生模板数据
+   * @param {string} data 新增内容
+   * @param {string} anchor 添加位置锚点
+   */
+  replaceFileContent(
+    basePath: string,
+    fileName: string,
+    origin: string,
+    data: string,
+    anchor: string,
+  ): void;
 }
 export default class Base implements IBase {
   localTempRepo: string = path.resolve(__dirname, "../.wxq-vue-templates");
@@ -81,6 +127,9 @@ export default class Base implements IBase {
   toLine(name: string) {
     return name.replace(/([A-Z])/g, "-$1").toLowerCase();
   }
+  toLowLine(name: string) {
+    return name.replace(/([A-Z])/g, "_$1").toLowerCase();
+  }
 
   toUpCase(name: string) {
     return name[0].toLocaleUpperCase() + name.substring(1);
@@ -90,8 +139,14 @@ export default class Base implements IBase {
     const compiled = template(content);
     const className = keyword;
     const lineClassName = this.toLine(keyword);
+    const lowLineClassName = this.toLowLine(keyword);
     const upCaseClassName = this.toUpCase(keyword);
-    return compiled({ className, lineClassName, upCaseClassName });
+    return compiled({
+      className,
+      lineClassName,
+      upCaseClassName,
+      lowLineClassName,
+    });
   }
   async confirmOverride(newType: string, name: string) {
     try {
@@ -106,5 +161,78 @@ export default class Base implements IBase {
     } catch (error) {
       console.log(chalk.red(error));
     }
+  }
+  replaceFileContent(
+    basePath: string,
+    fileName: string,
+    origin: string,
+    data: string,
+    anchor: string,
+  ) {
+    const filePath = path.join(basePath, fileName);
+    if (!fs.existsSync(filePath)) {
+      this.writeFile(basePath, fileName, origin);
+    }
+    fs.readFile(filePath, (err: any, fileData: any) => {
+      let fileContent = fileData.toString("utf8");
+      const regx = new RegExp(anchor);
+      if (fileContent.search(regx) === -1) {
+        this.showTip("Failed, Don't find the anchor");
+      }
+      fileContent = fileContent.replace(regx, data);
+      fs.writeFile(filePath, fileContent, (err: any) => {
+        this.showError(err);
+      });
+    });
+  }
+  addContentAppendToFile(
+    basePath: string,
+    fileName: string,
+    data: string,
+    origin: string,
+  ) {
+    const filePath = path.join(basePath, fileName);
+    if (!fs.existsSync(filePath)) {
+      this.writeFile(basePath, fileName, origin);
+    }
+    // 'a' - 打开文件用于追加。如果文件不存在，则创建该文件。
+    fs.open(filePath, "a", (err: any, fd: any) => {
+      this.showError(err);
+      fs.appendFile(filePath, data, "utf8", (err: any) => {
+        fs.close(fd, (err: any) => {
+          this.showError(err);
+        });
+        this.showError(err);
+      });
+    });
+  }
+  async writeFile(
+    basePath: string,
+    fileName: string,
+    data: Buffer | string,
+    overwrite?: boolean,
+  ) {
+    if (overwrite) {
+      // TODO 文件重复提醒 更改命名
+      // const override = await this.confirmOverride("page", fileName);
+      // return console.log(
+      //   chalk.bgBlue(`${override ? "Numbered Mode!!!" : "continue..."}`),
+      // );
+    }
+    const filePath = path.join(basePath, fileName);
+    // TODO  文件重复优化
+    // 文件夹已存在
+    if (!overwrite && fs.existsSync(basePath) && fs.existsSync(filePath)) {
+      return;
+    }
+    // 创建文件夹
+    if (!fs.existsSync(basePath)) {
+      mkdirp.sync(basePath);
+    }
+    // fs.writeFile(fileName: ./xx.txt, data:string, options: default { 'flag': 'w' }: any, callback)
+    fs.writeFile(filePath, data, { flag: "w" }, (err: any) => {
+      this.showError(err);
+      this.showSucceed(`${fileName} created successfuly!`);
+    });
   }
 }
