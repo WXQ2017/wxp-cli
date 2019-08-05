@@ -3,8 +3,8 @@ const chalk = require("chalk");
 import Base from "./domain/Base";
 import Page from "./domain/Page";
 import Component from "./domain/Component";
-interface IWxqBuild {}
-export default class WxqBuild extends Base implements IWxqBuild {}
+interface IWxqDelete {}
+export default class WxqDelete extends Base implements IWxqDelete {}
 
 /**
  * Usage.
@@ -12,8 +12,8 @@ export default class WxqBuild extends Base implements IWxqBuild {}
 
 program
   .usage("<templateName> [pageName]")
-  .option("-c, --component", "new a component")
-  .option("-p --page", "new a page");
+  .option("-c, --component", "delete a component")
+  .option("-p --page", "delete a page");
 
 /**
  * Help.
@@ -22,13 +22,13 @@ program
 program.on("--help", () => {
   console.log(chalk.magenta("  Examples:"));
   console.log();
-  console.log(chalk.yellow("    # create a new page with name is demo-list"));
-  console.log("    $ wxq build -p demoList");
+  console.log(chalk.yellow("    # delete a new page with name is demo-list"));
+  console.log("    $ wxq delete -p demoList");
   console.log();
   console.log(
-    chalk.yellow("    # create a new component with name is add-info"),
+    chalk.yellow("    # delete a new component with name is add-info"),
   );
-  console.log("    $ wxq build -c addInfo");
+  console.log("    $ wxq delete -c addInfo");
   console.log();
 });
 
@@ -40,12 +40,13 @@ if (program.args.length < 1) {
 console.log();
 console.log();
 let isTrue = false;
-// add page
+
+// delete page
 if (program.hasOwnProperty("page")) {
   const page = new Page(program.page, program.args[0]);
-  page.copyFile();
-  page.addPageLazyLoad();
-  page.addRouter();
+  page.delFile();
+  page.delPageLazyLoad();
+  // page.addRouter();
   isTrue = true;
 }
 

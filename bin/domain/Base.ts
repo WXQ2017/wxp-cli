@@ -81,6 +81,7 @@ interface IBase {
    * @param {string} origin 原生模板数据
    * @param {string} data 新增内容
    * @param {string} anchor 添加位置锚点
+   * @param {string} clear 清除指定内容
    */
   replaceFileContent(
     basePath: string,
@@ -88,10 +89,11 @@ interface IBase {
     origin: string,
     data: string,
     anchor: string,
+    clear?: boolean,
   ): void;
 }
 export default class Base implements IBase {
-  localTempRepo: string = path.resolve(__dirname, "../.wxq-vue-templates");
+  localTempRepo: string = path.resolve(__dirname, "../../.wxq-vue-templates");
   currentDir: string = process.cwd();
   isVueTempPathSuffix: string = "../../config/vue-src";
   isReactTempPathSuffix: string = "../../config/react-src";
@@ -168,6 +170,7 @@ export default class Base implements IBase {
     origin: string,
     data: string,
     anchor: string,
+    clear?: boolean,
   ) {
     const filePath = path.join(basePath, fileName);
     if (!fs.existsSync(filePath)) {
@@ -179,7 +182,13 @@ export default class Base implements IBase {
       if (fileContent.search(regx) === -1) {
         this.showTip("Failed, Don't find the anchor");
       }
-      fileContent = fileContent.replace(regx, data);
+      if (clear) {
+        // delete content
+        console.log(fileContent.search(data));
+        fileContent.replace(data, " ");
+      } else {
+        fileContent = fileContent.replace(regx, data);
+      }
       fs.writeFile(filePath, fileContent, (err: any) => {
         this.showError(err);
       });
@@ -232,7 +241,7 @@ export default class Base implements IBase {
     // fs.writeFile(fileName: ./xx.txt, data:string, options: default { 'flag': 'w' }: any, callback)
     fs.writeFile(filePath, data, { flag: "w" }, (err: any) => {
       this.showError(err);
-      this.showSucceed(`${fileName} created successfuly!`);
+      // this.showSucceed(`${fileName} created successfuly!`);
     });
   }
 }
