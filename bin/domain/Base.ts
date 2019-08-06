@@ -217,6 +217,7 @@ export default class Base implements IBase {
     // 文件夹已存在
     if (fs.existsSync(basePath) && fs.existsSync(filePath)) {
       // this.showTip(`${fileName} is existed`);
+      return;
     }
     // 创建文件夹
     if (!fs.existsSync(basePath)) {

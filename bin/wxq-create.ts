@@ -23,12 +23,12 @@ program.on("--help", () => {
   console.log(chalk.magenta("  Examples:"));
   console.log();
   console.log(chalk.yellow("    # create a new page with name is demo-list"));
-  console.log("    $ wxq build -p demoList");
+  console.log("    $ wxq create -p demoList");
   console.log();
   console.log(
     chalk.yellow("    # create a new component with name is add-info"),
   );
-  console.log("    $ wxq build -c addInfo");
+  console.log("    $ wxq create -c addInfo");
   console.log();
 });
 
@@ -46,6 +46,14 @@ if (program.hasOwnProperty("page")) {
   page.copyFile();
   page.addPageLazyLoad();
   page.addRouter();
+  isTrue = true;
+}
+
+// add component
+if (program.hasOwnProperty("component")) {
+  const comp = new Component(program.component, program.args[0]);
+  comp.copyFile();
+  comp.addCompLazyLoad();
   isTrue = true;
 }
 
