@@ -46,7 +46,7 @@ if (program.hasOwnProperty("page")) {
   const page = new Page(program.page, program.args[0]);
   page.delFile();
   page.delPageLazyLoad();
-  // page.addRouter();
+  page.delRouter();
   isTrue = true;
 }
 

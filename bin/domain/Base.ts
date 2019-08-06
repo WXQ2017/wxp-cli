@@ -4,6 +4,7 @@ const template = require("lodash.template");
 const inquirer = require("inquirer");
 const fs = require("fs");
 const mkdirp = require("mkdirp");
+const rm = require("rimraf").sync;
 
 // 换行
 const os = require("os");
@@ -53,12 +54,7 @@ interface IBase {
    * @param data file data
    * @param overwrite 已存在命名
    */
-  writeFile(
-    basePath: string,
-    fileName: string,
-    data: Buffer | string,
-    overwrite: boolean,
-  ): void;
+  writeFile(basePath: string, fileName: string, data: Buffer | string): void;
   /**
    * 添加文件内容
    * @description:
@@ -177,15 +173,15 @@ export default class Base implements IBase {
       this.writeFile(basePath, fileName, origin);
     }
     fs.readFile(filePath, (err: any, fileData: any) => {
-      let fileContent = fileData.toString("utf8");
+      let fileContent = fileData.toString();
       const regx = new RegExp(anchor);
       if (fileContent.search(regx) === -1) {
         this.showTip("Failed, Don't find the anchor");
       }
       if (clear) {
         // delete content
-        console.log(fileContent.search(data));
-        fileContent.replace(data, " ");
+        const reg = new RegExp(data);
+        fileContent = fileContent.replace(reg, "");
       } else {
         fileContent = fileContent.replace(regx, data);
       }
@@ -215,24 +211,12 @@ export default class Base implements IBase {
       });
     });
   }
-  async writeFile(
-    basePath: string,
-    fileName: string,
-    data: Buffer | string,
-    overwrite?: boolean,
-  ) {
-    if (overwrite) {
-      // TODO 文件重复提醒 更改命名
-      // const override = await this.confirmOverride("page", fileName);
-      // return console.log(
-      //   chalk.bgBlue(`${override ? "Numbered Mode!!!" : "continue..."}`),
-      // );
-    }
+  async writeFile(basePath: string, fileName: string, data: Buffer | string) {
     const filePath = path.join(basePath, fileName);
     // TODO  文件重复优化
     // 文件夹已存在
-    if (!overwrite && fs.existsSync(basePath) && fs.existsSync(filePath)) {
-      return;
+    if (fs.existsSync(basePath) && fs.existsSync(filePath)) {
+      // this.showTip(`${fileName} is existed`);
     }
     // 创建文件夹
     if (!fs.existsSync(basePath)) {
@@ -241,7 +225,7 @@ export default class Base implements IBase {
     // fs.writeFile(fileName: ./xx.txt, data:string, options: default { 'flag': 'w' }: any, callback)
     fs.writeFile(filePath, data, { flag: "w" }, (err: any) => {
       this.showError(err);
-      // this.showSucceed(`${fileName} created successfuly!`);
+      this.showSucceed(`${fileName} created successfuly!`);
     });
   }
 }

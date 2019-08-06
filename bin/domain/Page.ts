@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const CONSTANT = require("../../config/constant");
 const existsSync = fs.existsSync;
-const rimraf = require("rimraf");
+const rm = require("rimraf");
 
 interface IPage {
   /**
@@ -15,6 +15,14 @@ interface IPage {
    *
    */
   addPageLazyLoad(): void;
+  /**
+   * 读取文件列表渲染写入
+   *
+   * @param {any[]} files 文件列表
+   * @param {string} basePath 文件目录地址
+   * @memberof IPage
+   */
+  multiFileWrite(files: any[], basePath: string): void;
 }
 export default class Page extends Base implements IPage {
   pageName: string;
@@ -32,23 +40,37 @@ export default class Page extends Base implements IPage {
       if (err) {
         return console.log(err);
       }
-      files.forEach((fileName: string) => {
-        const ext = this.getExtName(fileName);
-        console.log(fileName);
-        const pathName = path.join(this.tempPath, "pages/demo", fileName);
-        fs.readFile(pathName, (err: any, data: any) => {
-          const compailedData = this.replaceKeyword(this.pageName, data);
-          const basePath = path.join(
-            this.currentDir,
-            "/src/pages/",
-            this.toLine(this.pageName),
-          );
-          this.writeFile(
-            basePath,
-            this.toLine(this.pageName) + ext,
-            compailedData,
-          );
+      const basePath = path.join(
+        this.currentDir,
+        "src/pages",
+        this.toLine(this.pageName),
+      );
+      if (existsSync(basePath)) {
+        this.confirmOverride("page", this.pageName).then(bool => {
+          if (bool) {
+            // rm(basePath, (err: any) => {
+            //   return this.showError(err);
+            // });
+            // this.multiFileWrite(files, basePath);
+            this.showError("coding is important, so avoid to modify");
+          }
         });
+      } else {
+        this.multiFileWrite(files, basePath);
+      }
+    });
+  }
+  multiFileWrite(files: any[], basePath: string) {
+    files.forEach((fileName: string) => {
+      const ext = this.getExtName(fileName);
+      const pathName = path.join(this.tempPath, fileName);
+      fs.readFile(pathName, (err: any, data: any) => {
+        const compailedData = this.replaceKeyword(this.pageName, data);
+        this.writeFile(
+          basePath,
+          this.toLine(this.pageName) + ext,
+          compailedData,
+        );
       });
     });
   }
@@ -92,7 +114,7 @@ export default class Page extends Base implements IPage {
       this.toLine(this.pageName),
     );
     if (existsSync(filePath)) {
-      rimraf(filePath, (err: any) => {
+      rm(filePath, (err: any) => {
         return this.showError(err);
       });
       this.showSucceed(`delete ${this.pageName} successfully!`);
@@ -104,8 +126,7 @@ export default class Page extends Base implements IPage {
     const basePath = path.join(this.currentDir, "src/pages");
     const fileName = "fac.page.ts";
     const origin = path.join(this.tempPath, "src/pages");
-    const data = this.replaceKeyword(this.pageName, CONSTANT.PAGE.CONTENT);
-    console.log("data:", data);
+    const data = this.replaceKeyword(this.pageName, CONSTANT.PAGE.REGX);
     this.replaceFileContent(
       basePath,
       fileName,
@@ -114,5 +135,23 @@ export default class Page extends Base implements IPage {
       CONSTANT.PAGE.ORIGIN,
       true,
     );
+  }
+  delRouter() {
+    const basePath = path.join(this.currentDir, "/src/");
+    const fileName = "module.router.ts";
+    const tempPath = path.join(
+      __dirname,
+      this.isVueTempPathSuffix,
+      "/",
+      fileName,
+    );
+    const origin = fs.readFileSync(tempPath);
+    const data = this.replaceKeyword(
+      this.pageName,
+      CONSTANT.PAGE.ROUTER_CONTENT,
+    );
+    const anchor = CONSTANT.PAGE.ROUTER_ORIGIN;
+    const isClear = true;
+    this.replaceFileContent(basePath, fileName, origin, data, anchor, isClear);
   }
 }
