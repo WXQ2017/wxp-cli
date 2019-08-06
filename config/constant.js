@@ -14,5 +14,7 @@ module.exports = CONSTANT = {
     ORIGIN: "// WXQ-BUILD-COMP # NOT DELETE",
     CONTENT:
       'Vue.component("<%= className%>", require("./<%= lineClassName%>/<%= lineClassName%>.vue").default);',
+    REGX:
+      'Vue\\.component\\("<%= className%>", require\\("\\./<%= lineClassName%>/<%= lineClassName%>\\.vue"\\)\\.default\\);',
   },
 };

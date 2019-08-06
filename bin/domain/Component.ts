@@ -1,6 +1,7 @@
 import Base from "./Base";
 const path = require("path");
 const fs = require("fs");
+const rm = require("rimraf");
 const CONSTANT = require("../../config/constant");
 export default class Component extends Base {
   compName: string;
@@ -37,6 +38,23 @@ export default class Component extends Base {
       });
     });
   }
+  delFile() {
+    const filePath = path.join(
+      this.currentDir,
+      "src/components",
+      this.toLine(this.compName),
+    );
+    if (fs.existsSync(filePath)) {
+      rm(filePath, (err: any) => {
+        return this.showError(err);
+      });
+      this.showSucceed(
+        `delete the ${this.compName} of components successfully!`,
+      );
+    } else {
+      this.showTip(`${this.compName} isn't exist`);
+    }
+  }
   addCompLazyLoad() {
     const basePath = path.join(this.currentDir, "/src/components/");
     const fileName = "fac.comp.ts";
@@ -51,6 +69,20 @@ export default class Component extends Base {
       "",
       content,
       CONSTANT.COMPONENT.ORIGIN,
+    );
+  }
+  delCompLazyLoad() {
+    const basePath = path.join(this.currentDir, "src/components");
+    const fileName = "fac.comp.ts";
+    const origin = path.join(this.tempPath, "src/components");
+    const data = this.replaceKeyword(this.compName, CONSTANT.COMPONENT.REGX);
+    this.replaceFileContent(
+      basePath,
+      fileName,
+      origin,
+      data,
+      CONSTANT.COMPONENT.ORIGIN,
+      true,
     );
   }
 }

@@ -49,6 +49,13 @@ if (program.hasOwnProperty("page")) {
   page.delRouter();
   isTrue = true;
 }
+// delete component
+if (program.hasOwnProperty("component")) {
+  const comp = new Component(program.page, program.args[0]);
+  comp.delFile();
+  comp.delCompLazyLoad();
+  isTrue = true;
+}
 
 //
 if (!isTrue) {
