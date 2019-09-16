@@ -10,6 +10,7 @@ export default class Component extends Base {
     "../../",
     "config/vue-src/component/demo",
   );
+  moduleDir: string = "/app";
   constructor(bool: boolean, compName: string) {
     super();
     this.compName = compName;
@@ -21,7 +22,7 @@ export default class Component extends Base {
       }
       const basePath = path.join(
         this.currentDir,
-        "src/components",
+        "src" + this.moduleDir + "/components",
         this.toLine(this.compName),
       );
       files.forEach((fileName: string) => {
@@ -41,7 +42,7 @@ export default class Component extends Base {
   delFile() {
     const filePath = path.join(
       this.currentDir,
-      "src/components",
+      "src" + this.moduleDir + "/components",
       this.toLine(this.compName),
     );
     if (fs.existsSync(filePath)) {
@@ -56,23 +57,40 @@ export default class Component extends Base {
     }
   }
   addCompLazyLoad() {
-    const basePath = path.join(this.currentDir, "/src/components/");
+    const basePath = path.join(
+      this.currentDir,
+      "/src" + this.moduleDir + "/components/",
+    );
     const fileName = "fac.comp.ts";
     const content =
       CONSTANT.COMPONENT.ORIGIN +
       this.endOfLine() +
       this.replaceKeyword(this.compName, CONSTANT.COMPONENT.CONTENT);
+    const nameContent =
+      CONSTANT.COMPONENT.NAME_ORIGIN +
+      this.endOfLine() +
+      this.replaceKeyword(this.compName, CONSTANT.COMPONENT.NAME_CONTENT);
 
-    this.replaceFileContent(
+    // this.replaceFileContent(
+    //   basePath,
+    //   fileName,
+    //   "",
+    //   content,
+    //   CONSTANT.COMPONENT.ORIGIN,
+    // );
+    this.multiReplaceFileContent(
       basePath,
       fileName,
       "",
-      content,
-      CONSTANT.COMPONENT.ORIGIN,
+      [content, nameContent],
+      [CONSTANT.COMPONENT.ORIGIN, CONSTANT.COMPONENT.NAME_ORIGIN],
     );
   }
   delCompLazyLoad() {
-    const basePath = path.join(this.currentDir, "src/components");
+    const basePath = path.join(
+      this.currentDir,
+      "src" + this.moduleDir + "/components",
+    );
     const fileName = "fac.comp.ts";
     const origin = path.join(this.tempPath, "src/components");
     const data = this.replaceKeyword(this.compName, CONSTANT.COMPONENT.REGX);

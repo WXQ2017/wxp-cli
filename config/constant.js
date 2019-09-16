@@ -11,10 +11,16 @@ module.exports = CONSTANT = {
     ROUTER_REGX: "",
   },
   COMPONENT: {
-    ORIGIN: "// WXQ-BUILD-COMP # NOT DELETE",
+    ORIGIN: "// WXQ-BUILD-COMP-REQUIRE # NOT DELETE",
+    NAME_ORIGIN: "// WXQ-BUILD-COMP-NAME # NOT DELETE",
+    // CONTENT:
+    //   'Vue.component("<%= className%>", require("./<%= lineClassName%>/<%= lineClassName%>.vue").default);',
     CONTENT:
-      'Vue.component("<%= className%>", require("./<%= lineClassName%>/<%= lineClassName%>.vue").default);',
+      'import <%= upCaseClassName%> from "./<%= lineClassName%>/<%= lineClassName%>.vue";',
+    NAME_CONTENT: "  <%= upCaseClassName%>",
+    // REGX:
+    //   'Vue\\.component\\("<%= className%>", require\\("\\./<%= lineClassName%>/<%= lineClassName%>\\.vue"\\)\\.default\\);',
     REGX:
-      'Vue\\.component\\("<%= className%>", require\\("\\./<%= lineClassName%>/<%= lineClassName%>\\.vue"\\)\\.default\\);',
+      'import <%= upCaseClassName%> from "\\./<%= lineClassName%>/<%= lineClassName%>\\.vue";',
   },
 };

@@ -11,6 +11,13 @@ interface IPage {
    */
   tempPath: string;
   /**
+   * 应用文件夹名
+   *
+   * @type {string}
+   * @memberof IPage
+   */
+  moduleDir: string;
+  /**
    * 新增page 懒加载依赖
    *
    */
@@ -26,6 +33,7 @@ interface IPage {
 }
 export default class Page extends Base implements IPage {
   pageName: string;
+  moduleDir: string = "/app";
   constructor(bool: boolean, pageName: string) {
     super();
     this.pageName = pageName;
@@ -42,9 +50,10 @@ export default class Page extends Base implements IPage {
       }
       const basePath = path.join(
         this.currentDir,
-        "src/pages",
+        "src" + this.moduleDir + "/pages",
         this.toLine(this.pageName),
       );
+      console.log("basePath", basePath);
       if (existsSync(basePath)) {
         this.confirmOverride("page", this.pageName).then(bool => {
           if (bool) {
@@ -75,7 +84,10 @@ export default class Page extends Base implements IPage {
     });
   }
   addPageLazyLoad() {
-    const basePath = path.join(this.currentDir, "/src/pages/");
+    const basePath = path.join(
+      this.currentDir,
+      "/src" + this.moduleDir + "/pages",
+    );
     const fileName = "fac.page.ts";
     const content =
       CONSTANT.PAGE.ORIGIN +
@@ -91,7 +103,7 @@ export default class Page extends Base implements IPage {
     );
   }
   addRouter() {
-    const basePath = path.join(this.currentDir, "/src/");
+    const basePath = path.join(this.currentDir, "/src/" + this.moduleDir);
     const fileName = "module.router.ts";
     const tempPath = path.join(
       __dirname,
@@ -110,7 +122,7 @@ export default class Page extends Base implements IPage {
   delFile() {
     const filePath = path.join(
       this.currentDir,
-      "src/pages",
+      "src" + this.moduleDir + "/pages",
       this.toLine(this.pageName),
     );
     if (existsSync(filePath)) {
@@ -123,7 +135,10 @@ export default class Page extends Base implements IPage {
     }
   }
   delPageLazyLoad() {
-    const basePath = path.join(this.currentDir, "src/pages");
+    const basePath = path.join(
+      this.currentDir,
+      "src" + this.moduleDir + "/pages",
+    );
     const fileName = "fac.page.ts";
     const origin = path.join(this.tempPath, "src/pages");
     const data = this.replaceKeyword(this.pageName, CONSTANT.PAGE.REGX);
@@ -137,7 +152,7 @@ export default class Page extends Base implements IPage {
     );
   }
   delRouter() {
-    const basePath = path.join(this.currentDir, "/src/");
+    const basePath = path.join(this.currentDir, "/src" + this.moduleDir);
     const fileName = "module.router.ts";
     const tempPath = path.join(
       __dirname,

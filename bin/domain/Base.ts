@@ -87,6 +87,25 @@ interface IBase {
     anchor: string,
     clear?: boolean,
   ): void;
+  /**
+   *替换文件中多处指定内容
+   *
+   * @param {string} basePath 文件路径
+   * @param {string} fileName 文件名称
+   * @param {string} origin 原生模板数据
+   * @param {any[]} dataList 新增内容
+   * @param {any[]} anchorList 添加位置锚点
+   * @param {boolean} [clear] 清除指定内容
+   * @memberof IBase
+   */
+  multiReplaceFileContent(
+    basePath: string,
+    fileName: string,
+    origin: string,
+    dataList: any[],
+    anchorList: any[],
+    clear?: boolean,
+  ): void;
 }
 export default class Base implements IBase {
   localTempRepo: string = path.resolve(__dirname, "../../.wxq-vue-templates");
@@ -185,6 +204,41 @@ export default class Base implements IBase {
       } else {
         fileContent = fileContent.replace(regx, data);
       }
+      fs.writeFile(filePath, fileContent, (err: any) => {
+        this.showError(err);
+      });
+    });
+  }
+  multiReplaceFileContent(
+    basePath: string,
+    fileName: string,
+    origin: string,
+    dataList: any[],
+    anchorList: any[],
+    clear?: boolean,
+  ) {
+    const filePath = path.join(basePath, fileName);
+    if (!fs.existsSync(filePath)) {
+      this.writeFile(basePath, fileName, origin);
+    }
+    fs.readFile(filePath, (err: any, fileData: any) => {
+      let fileContent = fileData.toString();
+      let index = 0;
+      for (const anchor of anchorList) {
+        const regx = new RegExp(anchor);
+        if (fileContent.search(regx) === -1) {
+          this.showTip("Failed, Don't find the anchor");
+        }
+        if (clear) {
+          // delete content
+          const reg = new RegExp(dataList[index]);
+          fileContent = fileContent.replace(reg, "");
+        } else {
+          fileContent = fileContent.replace(regx, dataList[index]);
+        }
+        index++;
+      }
+
       fs.writeFile(filePath, fileContent, (err: any) => {
         this.showError(err);
       });
