@@ -1,5 +1,13 @@
-import Vue from "vue";
 import Component, { mixins } from "vue-class-component";
+import {
+  Emit,
+  Inject,
+  Model,
+  Prop,
+  Provide,
+  Vue,
+  Watch,
+} from "vue-property-decorator";
 import BaseComp from "../BaseComp";
 
 interface I<%= upCaseClassName%>Comp {

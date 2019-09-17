@@ -1,6 +1,6 @@
 {
   "name": "wxq-cli",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "前端构建工具",
   "main": "index.js",
   "directories": {
@@ -25,7 +25,6 @@
     "request": "^2.87.0",
     "rimraf": "^2.6.2",
     "semver": "^5.5.0",
-    "sgv-cli": "^1.1.4",
     "tslint": "^5.18.0",
     "typescript": "^3.5.3",
     "user-home": "^2.0.0"

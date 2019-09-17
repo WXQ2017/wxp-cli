@@ -17,7 +17,7 @@ module.exports = CONSTANT = {
     //   'Vue.component("<%= className%>", require("./<%= lineClassName%>/<%= lineClassName%>.vue").default);',
     CONTENT:
       'import <%= upCaseClassName%> from "./<%= lineClassName%>/<%= lineClassName%>.vue";',
-    NAME_CONTENT: "  <%= upCaseClassName%>",
+    NAME_CONTENT: "  <%= upCaseClassName%>,",
     // REGX:
     //   'Vue\\.component\\("<%= className%>", require\\("\\./<%= lineClassName%>/<%= lineClassName%>\\.vue"\\)\\.default\\);',
     REGX:

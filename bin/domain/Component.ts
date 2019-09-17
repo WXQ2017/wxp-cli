@@ -94,12 +94,24 @@ export default class Component extends Base {
     const fileName = "fac.comp.ts";
     const origin = path.join(this.tempPath, "src/components");
     const data = this.replaceKeyword(this.compName, CONSTANT.COMPONENT.REGX);
-    this.replaceFileContent(
+    const nameData = this.replaceKeyword(
+      this.compName,
+      CONSTANT.COMPONENT.NAME_CONTENT,
+    );
+    // this.replaceFileContent(
+    //   basePath,
+    //   fileName,
+    //   origin,
+    //   data,
+    //   CONSTANT.COMPONENT.ORIGIN,
+    //   true,
+    // );
+    this.multiReplaceFileContent(
       basePath,
       fileName,
       origin,
-      data,
-      CONSTANT.COMPONENT.ORIGIN,
+      [data, nameData],
+      [CONSTANT.COMPONENT.ORIGIN, CONSTANT.COMPONENT.NAME_ORIGIN],
       true,
     );
   }
